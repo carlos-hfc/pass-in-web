@@ -7,6 +7,8 @@ import {
   SearchIcon,
 } from "lucide-react"
 
+import { IconButton } from "./icon-button"
+
 export function AttendeeList() {
   return (
     <div className="flex flex-col gap-4">
@@ -82,9 +84,9 @@ export function AttendeeList() {
                   2 dias atrás
                 </td>
                 <td className="px-4 py-3 text-sm text-zinc-300">
-                  <button className="rounded-md border border-white/10 bg-black/20 p-1.5">
+                  <IconButton transparent>
                     <MoreHorizontalIcon className="size-4" />
-                  </button>
+                  </IconButton>
                 </td>
               </tr>
             ))}
@@ -106,18 +108,18 @@ export function AttendeeList() {
                   <span>Página 1 de 23</span>
 
                   <div className="flex gap-1.5">
-                    <button className="rounded-md border border-white/10 bg-white/10 p-1.5">
+                    <IconButton>
                       <ChevronsLeftIcon className="size-4" />
-                    </button>
-                    <button className="rounded-md border border-white/10 bg-white/10 p-1.5">
+                    </IconButton>
+                    <IconButton>
                       <ChevronLeftIcon className="size-4" />
-                    </button>
-                    <button className="rounded-md border border-white/10 bg-white/10 p-1.5">
+                    </IconButton>
+                    <IconButton>
                       <ChevronRightIcon className="size-4" />
-                    </button>
-                    <button className="rounded-md border border-white/10 bg-white/10 p-1.5">
+                    </IconButton>
+                    <IconButton>
                       <ChevronsRightIcon className="size-4" />
-                    </button>
+                    </IconButton>
                   </div>
                 </div>
               </td>
