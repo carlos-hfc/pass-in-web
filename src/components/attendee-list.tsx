@@ -1,3 +1,5 @@
+import { formatDistanceToNow } from "date-fns"
+import { ptBR } from "date-fns/locale"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -8,6 +10,7 @@ import {
 } from "lucide-react"
 import { useState } from "react"
 
+import { attendees } from "../data/attendees"
 import { IconButton } from "./icon-button"
 import { Table } from "./table/table"
 import { TableCell } from "./table/table-cell"
@@ -16,6 +19,26 @@ import { TableRow } from "./table/table-row"
 
 export function AttendeeList() {
   const [search, setSearch] = useState("")
+  const [page, setPage] = useState(1)
+
+  const totalPages = Math.ceil(attendees.length / 10)
+  const itemsPerPage = attendees.slice((page - 1) * 10, page * 10).length
+
+  function goToFirstPage() {
+    setPage(1)
+  }
+
+  function goToLastPage() {
+    setPage(totalPages)
+  }
+
+  function goToPreviousPage() {
+    setPage(prev => prev - 1)
+  }
+
+  function goToNextPage() {
+    setPage(prev => prev + 1)
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -26,7 +49,8 @@ export function AttendeeList() {
           <input
             type="text"
             placeholder="Buscar participante..."
-            className="h-auto flex-1 border-0 bg-transparent p-0 text-sm outline-none"
+            className="h-auto flex-1 border-0 bg-transparent p-0 text-sm focus:outline-none focus:ring-0"
+            value={search}
             onChange={e => setSearch(e.target.value)}
           />
         </div>
@@ -50,9 +74,9 @@ export function AttendeeList() {
         </thead>
 
         <tbody>
-          {Array.from({ length: 8 }).map((_, i) => (
+          {attendees.slice((page - 1) * 10, page * 10).map(attendee => (
             <TableRow
-              key={i}
+              key={attendee.id}
               className="hover:bg-white/5"
             >
               <TableCell>
@@ -61,17 +85,27 @@ export function AttendeeList() {
                   className="size-4 rounded border border-white/10 bg-black/20"
                 />
               </TableCell>
-              <TableCell>1234</TableCell>
+              <TableCell>{attendee.id}</TableCell>
               <TableCell>
                 <div className="flex flex-col gap-1">
                   <span className="font-semibold text-white">
-                    Carlos Faustino
+                    {attendee.name}
                   </span>
-                  <span>carlos@email.com</span>
+                  <span>{attendee.email}</span>
                 </div>
               </TableCell>
-              <TableCell>7 dias atrás</TableCell>
-              <TableCell>2 dias atrás</TableCell>
+              <TableCell>
+                {formatDistanceToNow(attendee.createdAt, {
+                  addSuffix: true,
+                  locale: ptBR,
+                })}
+              </TableCell>
+              <TableCell>
+                {formatDistanceToNow(attendee.checkedInAt, {
+                  addSuffix: true,
+                  locale: ptBR,
+                })}
+              </TableCell>
               <TableCell>
                 <IconButton transparent>
                   <MoreHorizontalIcon className="size-4" />
@@ -83,25 +117,49 @@ export function AttendeeList() {
 
         <tfoot>
           <tr>
-            <TableCell colSpan={3}>Mostrando 10 de 228 itens</TableCell>
+            <TableCell colSpan={3}>
+              Mostrando {itemsPerPage} de {attendees.length} itens
+            </TableCell>
             <TableCell
               colSpan={3}
               className="text-right"
             >
               <div className="flex items-center justify-end gap-8">
-                <span>Página 1 de 23</span>
+                <span>
+                  Página {page} de {totalPages}
+                </span>
 
                 <div className="flex gap-1.5">
-                  <IconButton>
+                  <IconButton
+                    disabled={page === 1}
+                    onClick={goToFirstPage}
+                    aria-label="Primeira página"
+                    title="Primeira página"
+                  >
                     <ChevronsLeftIcon className="size-4" />
                   </IconButton>
-                  <IconButton>
+                  <IconButton
+                    disabled={page === 1}
+                    onClick={goToPreviousPage}
+                    aria-label="Página anterior"
+                    title="Página anterior"
+                  >
                     <ChevronLeftIcon className="size-4" />
                   </IconButton>
-                  <IconButton>
+                  <IconButton
+                    disabled={page === totalPages}
+                    onClick={goToNextPage}
+                    aria-label="Próxima página"
+                    title="Próxima página"
+                  >
                     <ChevronRightIcon className="size-4" />
                   </IconButton>
-                  <IconButton>
+                  <IconButton
+                    disabled={page === totalPages}
+                    onClick={goToLastPage}
+                    aria-label="Última página"
+                    title="Última página"
+                  >
                     <ChevronsRightIcon className="size-4" />
                   </IconButton>
                 </div>
