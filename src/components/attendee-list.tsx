@@ -8,21 +8,46 @@ import {
   MoreHorizontalIcon,
   SearchIcon,
 } from "lucide-react"
-import { useState } from "react"
+import { ChangeEvent, useEffect, useState } from "react"
 
-import { attendees } from "../data/attendees"
 import { IconButton } from "./icon-button"
 import { Table } from "./table/table"
 import { TableCell } from "./table/table-cell"
 import { TableHeader } from "./table/table-header"
 import { TableRow } from "./table/table-row"
 
+interface Attendee {
+  id: number
+  name: string
+  email: string
+  createdAt: string
+  checkedInAt: string | null
+}
+
 export function AttendeeList() {
   const [search, setSearch] = useState("")
   const [page, setPage] = useState(1)
+  const [attendees, setAttendees] = useState<Attendee[]>([])
+  const [total, setTotal] = useState(0)
 
-  const totalPages = Math.ceil(attendees.length / 10)
-  const itemsPerPage = attendees.slice((page - 1) * 10, page * 10).length
+  const totalPages = Math.ceil(total / 10)
+  const itemsPerPage = attendees.length
+
+  useEffect(() => {
+    const url = new URL(
+      "http://localhost:3333/events/41c71d1e-cd4d-47f9-8391-bc9d5e5141b1/attendees",
+    )
+
+    url.searchParams.set("pageIndex", String(page - 1))
+    if (search) url.searchParams.set("query", search)
+
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        setAttendees(data.attendees)
+        setTotal(data.total)
+      })
+  }, [page, search])
 
   function goToFirstPage() {
     setPage(1)
@@ -40,6 +65,11 @@ export function AttendeeList() {
     setPage(prev => prev + 1)
   }
 
+  function handleSearchInputChange(event: ChangeEvent<HTMLInputElement>) {
+    setSearch(event.target.value)
+    goToFirstPage()
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
@@ -51,7 +81,7 @@ export function AttendeeList() {
             placeholder="Buscar participante..."
             className="h-auto flex-1 border-0 bg-transparent p-0 text-sm focus:outline-none focus:ring-0"
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={handleSearchInputChange}
           />
         </div>
       </div>
@@ -74,7 +104,7 @@ export function AttendeeList() {
         </thead>
 
         <tbody>
-          {attendees.slice((page - 1) * 10, page * 10).map(attendee => (
+          {attendees.map(attendee => (
             <TableRow
               key={attendee.id}
               className="hover:bg-white/5"
@@ -95,16 +125,20 @@ export function AttendeeList() {
                 </div>
               </TableCell>
               <TableCell>
-                {formatDistanceToNow(attendee.createdAt, {
+                {formatDistanceToNow(new Date(attendee.createdAt), {
                   addSuffix: true,
                   locale: ptBR,
                 })}
               </TableCell>
               <TableCell>
-                {formatDistanceToNow(attendee.checkedInAt, {
-                  addSuffix: true,
-                  locale: ptBR,
-                })}
+                {attendee.checkedInAt ? (
+                  formatDistanceToNow(new Date(attendee.checkedInAt), {
+                    addSuffix: true,
+                    locale: ptBR,
+                  })
+                ) : (
+                  <span className="text-zinc-400">Não fez check-in</span>
+                )}
               </TableCell>
               <TableCell>
                 <IconButton transparent>
@@ -118,7 +152,7 @@ export function AttendeeList() {
         <tfoot>
           <tr>
             <TableCell colSpan={3}>
-              Mostrando {itemsPerPage} de {attendees.length} itens
+              Mostrando {itemsPerPage} de {total} itens
             </TableCell>
             <TableCell
               colSpan={3}
